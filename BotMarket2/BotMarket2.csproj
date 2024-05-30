@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>aspnet-BotMarket2-4300d32e-53b3-4a71-b86d-8e1e04e09564</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BotMarket2.Api\BotMarket2.Api.csproj" />
+    <ProjectReference Include="..\BotMarket2.BAL\BotMarket2.BAL.csproj" />
+    <ProjectReference Include="..\BotMarket2.Client\BotMarket2.Client.csproj" />
+    <ProjectReference Include="..\BotMarket2.Common\BotMarket2.Common.csproj" />
+    <ProjectReference Include="..\BotMarket2.DAL\BotMarket2.DAL.csproj" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.0" />
+  </ItemGroup>
+
+</Project>
