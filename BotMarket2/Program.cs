@@ -6,6 +6,7 @@ using BotMarket2.Components.Account;
 using BotMarket2.Common.Models;
 using BotMarket2.Components;
 using BotMarket2.Client.Components.Pages;
+using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +26,9 @@ builder.Services.AddAuthentication(options =>
         options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
     })
     .AddIdentityCookies();
+
+builder.Services.AddMudServices();
+builder.Services.AddMudPopoverService();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
