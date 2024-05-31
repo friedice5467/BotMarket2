@@ -1,8 +1,4 @@
-﻿<MudThemeProvider />
-<MudDialogProvider />
-<MudSnackbarProvider />
-
-<Router AppAssembly="@typeof(Program).Assembly">
+﻿<Router AppAssembly="@typeof(Program).Assembly">
     <Found Context="routeData">
         <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(Client.Components.Layout.MainLayout)">
             <NotAuthorized>

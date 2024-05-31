@@ -4,12 +4,20 @@
 @inject NavigationManager NavigationManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
+
+<MudThemeProvider @ref="@_mudThemeProvider" @bind-IsDarkMode="@_isDarkMode"/>
+<MudDialogProvider />
+<MudSnackbarProvider />
+
 @if(!_isStatic)
 {
     <MudLayout>
         <MudAppBar Elevation="1">
             <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@DrawerToggle" id="drawer-toggle" />
             <MudSpacer />
+            @*Create a mud toggle icon button for dark mode/lightmode*@
+            <MudToggleIconButton Icon="@(Icons.Material.Filled.DarkMode)" ToggledIcon="@Icons.Material.Outlined.LightMode" @bind-Toggled="@_isDarkMode" Title="Toggle Dark Mode" ToggledTitle="Toggle Light Mode" />
+
             <AuthorizeView>
                 <Authorized>
                     <MudAvatar @onclick="ToggleUserMenu" Color="Color.Primary" Style="cursor: pointer;">
@@ -84,7 +92,9 @@ else
     private bool _drawerOpen;
     private bool _userMenuOpen;
     private bool _isStatic = true;
+    private bool _isDarkMode;
     private string _currentUrl = string.Empty;
+    private MudThemeProvider _mudThemeProvider;
 
     protected override void OnInitialized()
     {
