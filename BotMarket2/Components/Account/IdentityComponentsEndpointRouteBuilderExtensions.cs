@@ -1,4 +1,3 @@
-using BotMarket2.Common.Models;
 using BotMarket2.Components.Account.Pages;
 using BotMarket2.Components.Account.Pages.Manage;
 using Microsoft.AspNetCore.Authentication;
@@ -9,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
 using System.Security.Claims;
 using System.Text.Json;
+using BotMarket2.DAL.Data;
 
 namespace Microsoft.AspNetCore.Routing
 {

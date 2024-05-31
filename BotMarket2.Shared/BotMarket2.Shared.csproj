@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BotMarket2.Common\BotMarket2.Common.csproj" />
-    <ProjectReference Include="..\BotMarket2.DAL\BotMarket2.DAL.csproj" />
   </ItemGroup>
 
 </Project>

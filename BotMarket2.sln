@@ -3,17 +3,19 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34322.80
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BotMarket2", "BotMarket2\BotMarket2.csproj", "{82CC4C84-7486-43A4-9182-522108C7434D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BotMarket2", "BotMarket2\BotMarket2.csproj", "{82CC4C84-7486-43A4-9182-522108C7434D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BotMarket2.Client", "BotMarket2.Client\BotMarket2.Client.csproj", "{C9A0BA18-5D01-4B43-B9B7-1C5B3C882CDF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BotMarket2.Client", "BotMarket2.Client\BotMarket2.Client.csproj", "{C9A0BA18-5D01-4B43-B9B7-1C5B3C882CDF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BotMarket2.DAL", "BotMarket2.DAL\BotMarket2.DAL.csproj", "{C345208F-62B7-41A3-99FF-560A1356523E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BotMarket2.DAL", "BotMarket2.DAL\BotMarket2.DAL.csproj", "{C345208F-62B7-41A3-99FF-560A1356523E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BotMarket2.BAL", "BotMarket2.BAL\BotMarket2.BAL.csproj", "{1EB49E2B-E3AC-4633-8BAE-0504E29CFDA8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BotMarket2.BAL", "BotMarket2.BAL\BotMarket2.BAL.csproj", "{1EB49E2B-E3AC-4633-8BAE-0504E29CFDA8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BotMarket2.Common", "BotMarket2.Common\BotMarket2.Common.csproj", "{AE1B4B6F-E418-4DAD-A15B-A627A83EC409}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BotMarket2.Common", "BotMarket2.Common\BotMarket2.Common.csproj", "{AE1B4B6F-E418-4DAD-A15B-A627A83EC409}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BotMarket2.Api", "BotMarket2.Api\BotMarket2.Api.csproj", "{4EFBFE7A-F1B0-4D2D-9981-9C2FA75BC08A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BotMarket2.Api", "BotMarket2.Api\BotMarket2.Api.csproj", "{4EFBFE7A-F1B0-4D2D-9981-9C2FA75BC08A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BotMarket2.Shared", "BotMarket2.Shared\BotMarket2.Shared.csproj", "{CBD998BD-0D4F-4A1A-A767-9869B5F8C8AC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,6 +47,10 @@ Global
 		{4EFBFE7A-F1B0-4D2D-9981-9C2FA75BC08A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4EFBFE7A-F1B0-4D2D-9981-9C2FA75BC08A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4EFBFE7A-F1B0-4D2D-9981-9C2FA75BC08A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CBD998BD-0D4F-4A1A-A767-9869B5F8C8AC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CBD998BD-0D4F-4A1A-A767-9869B5F8C8AC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CBD998BD-0D4F-4A1A-A767-9869B5F8C8AC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CBD998BD-0D4F-4A1A-A767-9869B5F8C8AC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

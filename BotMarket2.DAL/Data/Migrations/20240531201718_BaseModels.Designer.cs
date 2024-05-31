@@ -4,6 +4,7 @@ using BotMarket2.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BotMarket2.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240531201718_BaseModels")]
+    partial class BaseModels
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -22,157 +25,7 @@ namespace BotMarket2.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("BotMarket2.Common.Models.Algorithm", b =>
-                {
-                    b.Property<int>("AlgorithmId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AlgorithmId"));
-
-                    b.Property<decimal?>("BollingerBands")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("EMA")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("HoldPeriod")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("MACD")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("RSI")
-                        .HasColumnType("int");
-
-                    b.Property<decimal?>("ResistanceLevel")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int?>("SMA")
-                        .HasColumnType("int");
-
-                    b.Property<decimal?>("StopLoss")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal?>("SupportLevel")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal?>("TakeProfit")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<TimeSpan>("TradingHoursEnd")
-                        .HasColumnType("time");
-
-                    b.Property<TimeSpan>("TradingHoursStart")
-                        .HasColumnType("time");
-
-                    b.Property<decimal?>("TrailingStop")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("AlgorithmId");
-
-                    b.ToTable("Algorithms");
-                });
-
-            modelBuilder.Entity("BotMarket2.Common.Models.HistoricalStockData", b =>
-                {
-                    b.Property<int>("HistoricalStockDataId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("HistoricalStockDataId"));
-
-                    b.Property<decimal>("CloseLast")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)")
-                        .HasColumnName("CloseLast");
-
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("datetime2");
-
-                    b.Property<decimal>("High")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("Low")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("Open")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("Symbol")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<long>("Volume")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("HistoricalStockDataId");
-
-                    b.HasIndex("Symbol", "Date");
-
-                    b.ToTable("HistoricalStockData");
-                });
-
-            modelBuilder.Entity("BotMarket2.Common.Models.Simulation", b =>
-                {
-                    b.Property<int>("SimulationId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SimulationId"));
-
-                    b.Property<int>("AlgorithmId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("EndDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<decimal>("FinalBalance")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("InitialInvestment")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("SimulationType")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("StartDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("SimulationId");
-
-                    b.HasIndex("AlgorithmId");
-
-                    b.ToTable("Simulations");
-                });
-
-            modelBuilder.Entity("BotMarket2.DAL.Data.ApplicationUser", b =>
+            modelBuilder.Entity("BotMarket2.Common.Models.ApplicationUser", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
@@ -370,17 +223,6 @@ namespace BotMarket2.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("BotMarket2.Common.Models.Simulation", b =>
-                {
-                    b.HasOne("BotMarket2.Common.Models.Algorithm", "Algorithm")
-                        .WithMany()
-                        .HasForeignKey("AlgorithmId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Algorithm");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -392,7 +234,7 @@ namespace BotMarket2.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("BotMarket2.DAL.Data.ApplicationUser", null)
+                    b.HasOne("BotMarket2.Common.Models.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -401,7 +243,7 @@ namespace BotMarket2.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("BotMarket2.DAL.Data.ApplicationUser", null)
+                    b.HasOne("BotMarket2.Common.Models.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -416,7 +258,7 @@ namespace BotMarket2.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("BotMarket2.DAL.Data.ApplicationUser", null)
+                    b.HasOne("BotMarket2.Common.Models.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -425,7 +267,7 @@ namespace BotMarket2.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("BotMarket2.DAL.Data.ApplicationUser", null)
+                    b.HasOne("BotMarket2.Common.Models.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)

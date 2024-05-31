@@ -1,5 +1,5 @@
 using BotMarket2.Client.Models;
-using BotMarket2.Common.Models;
+using BotMarket2.DAL.Data;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server;

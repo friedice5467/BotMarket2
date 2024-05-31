@@ -1,4 +1,4 @@
-using BotMarket2.Common.Models;
+using BotMarket2.DAL.Data;
 using Microsoft.AspNetCore.Identity;
 
 namespace BotMarket2.Components.Account

@@ -6,8 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup>
-	  <FrameworkReference Include="Microsoft.AspNetCore.App" />
+	<ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0" />
   </ItemGroup>
 
 </Project>

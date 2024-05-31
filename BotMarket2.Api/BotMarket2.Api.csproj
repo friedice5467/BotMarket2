@@ -6,4 +6,14 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BotMarket2.BAL\BotMarket2.BAL.csproj" />
+    <ProjectReference Include="..\BotMarket2.Common\BotMarket2.Common.csproj" />
+    <ProjectReference Include="..\BotMarket2.DAL\BotMarket2.DAL.csproj" />
+  </ItemGroup>
+
 </Project>
