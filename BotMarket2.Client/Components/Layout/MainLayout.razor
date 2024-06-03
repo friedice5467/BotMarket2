@@ -61,10 +61,10 @@
             </MudDrawerHeader>
             <NavMenu  IsStatic="@_isStatic"/>
         </MudDrawer>
-        <MudMainContent>
-            <div class="content px-4">
+        <MudMainContent style="height: 100vh !important;">
+            <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="h-100">
                 @Body
-            </div>
+            </MudContainer>
         </MudMainContent>
     </MudLayout>
 }
@@ -110,7 +110,7 @@ else
         StateHasChanged();
     }
 
-    async void DrawerToggle()
+    void DrawerToggle()
     {
         _drawerOpen = !_drawerOpen;
     }

@@ -26,8 +26,7 @@ namespace BotMarket2.Api.Controllers
         public IActionResult GetStockData(string symbol, int yrsFromEndDate)
         {
             var stockData = _stockDataService.GetStockData(symbol, yrsFromEndDate);
-            var dtos = stockData.Select(x => ModelConvertor.StockDataToDTO(x));
-            return Ok(dtos);
+            return Ok(stockData);
         }
     }
 }

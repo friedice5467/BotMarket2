@@ -1,0 +1,312 @@
+﻿@page "/stock"
+@using BotMarket2.Client.Repositories.StockData
+@using BotMarket2.Shared.DTO
+@using ApexCharts
+@inject IStockDataRepo _stockDataRepo
+
+<PageTitle>Stock Sim</PageTitle>
+
+<MudContainer Class="h-100 pt-4">
+    @if (_stockData.Count == 0)
+    {
+        <MudProgressCircular Color="MudBlazor.Color.Primary" Style="height:7rem; width: 7rem;" Indeterminate="true" />
+    }
+    else
+    {
+        <MudItem xs="12" Style="height: 25%;">
+            <ApexChart TItem="HistoricalStockDataDTO" Title="MSFT Price History"
+                       XAxisType="XAxisType.Datetime"
+                       Options="mainChartOptions"
+                       Height="@("100%")">
+                <ApexPointSeries TItem="HistoricalStockDataDTO"
+                                 Items="_stockData"
+                                 SeriesType="SeriesType.Area"
+                                 Name="Close Price"
+                                 XValue="@(item => item.Date)"
+                                 YValue="@(item => item.CloseLast)" />
+            </ApexChart>
+        </MudItem>
+        <MudItem xs="12">
+            <MudSelect @bind-SelectedValues="_selectedValues" MultiSelection="true">
+                @foreach(var item in _selectMap)
+                {
+                    <MudSelectItem Value="@item.Key">@item.Value</MudSelectItem>
+                }
+            </MudSelect>
+            @foreach(var item in _selectedValues)
+            {
+                <p>Selected item is @item</p>
+            }
+        </MudItem>
+        <MudItem xs="12" Style="@($"height: 25%;")">
+            <ApexChart TItem="HistoricalStockDataDTO" Title="MSFT Volume History"
+                       XAxisType="XAxisType.Datetime"
+                       Options="volumeChartOptions"
+                       Height="@("100%")"
+                       Debug="true"
+                       OnBrushScrolled="@BrushScrolled"
+                       OnBeforeMount="OnMount"
+                       @ref="@volumeChartRef">
+                <ApexPointSeries TItem="HistoricalStockDataDTO"
+                                 Items="_stockData"
+                                 SeriesType="SeriesType.Bar"
+                                 Name="Volume"
+                                 XValue="@(item => item.Date)"
+                                 YValue="@(item => item.Volume/(long)1000)" />
+                <ApexPointSeries TItem="HistoricalStockDataDTO"
+                                 Items="_stockData"
+                                 SeriesType="SeriesType.Line"
+                                 Name="SMA"
+                                 XValue="@(item => item.Date)"
+                                 YValue="@(item => (decimal?)item.SMA)" />
+                <ApexPointSeries TItem="HistoricalStockDataDTO"
+                                 Items="_stockData"
+                                 SeriesType="SeriesType.Line"
+                                 Name="EMA"
+                                 XValue="@(item => item.Date)"
+                                 YValue="@(item => (decimal?)item.EMA)" />
+                <ApexPointSeries TItem="HistoricalStockDataDTO"
+                                 Items="_stockData"
+                                 SeriesType="SeriesType.Area"
+                                 Name="MACD"
+                                 XValue="@(item => item.Date)"
+                                 YValue="@(item => (decimal?)item.MACD)" />
+                <ApexPointSeries TItem="HistoricalStockDataDTO"
+                                 Items="_stockData"
+                                 SeriesType="SeriesType.Line"
+                                 Name="RSI"
+                                 XValue="@(item => item.Date)"
+                                 YValue="@(item => (decimal?)item.RSI)" />
+                <ApexPointSeries TItem="HistoricalStockDataDTO"
+                                 Items="_stockData"
+                                 SeriesType="SeriesType.Line"
+                                 Name="Bollinger Band Upper"
+                                 XValue="@(item => item.Date)"
+                                 YValue="@(item => (decimal?)item.BollingerBandUpper)" />
+                <ApexPointSeries TItem="HistoricalStockDataDTO"
+                                 Items="_stockData"
+                                 SeriesType="SeriesType.Line"
+                                 Name="Bollinger Band Lower"
+                                 XValue="@(item => item.Date)"
+                                 YValue="@(item => (decimal?)item.BollingerBandLower)" />
+            </ApexChart>
+        </MudItem>
+    }
+</MudContainer>
+
+@code {
+    private List<HistoricalStockDataDTO> _stockData = new();
+    private ApexChartOptions<HistoricalStockDataDTO> mainChartOptions = new ApexChartOptions<HistoricalStockDataDTO>();
+    private ApexChartOptions<HistoricalStockDataDTO> volumeChartOptions = new ApexChartOptions<HistoricalStockDataDTO>();
+    private ApexChart<HistoricalStockDataDTO> volumeChartRef;
+    private bool _displayState = false;
+    private DateTimeOffset XMin;
+    private DateTimeOffset XMax;
+    private Dictionary<int, string> _selectMap = new()
+    {
+        { 0, "SMA" },
+        { 1, "EMA" },
+        { 2, "MACD" },
+        { 3, "RSI" },
+        { 4, "Bollinger Band Upper" },
+        { 5, "Bollinger Band Lower" },
+        { 6, "Volume"}
+    };
+
+    private IEnumerable<int> _selectedValues = new HashSet<int>(){2, 3};
+    public IEnumerable<int> SelectedValues
+    {
+        get => _selectedValues;
+        set
+        {
+            if (!_selectedValues.ToHashSet().SetEquals(value))
+            {
+                _selectedValues = value;
+                OnSelectedValuesChanged();
+            }
+        }
+    }
+
+
+    private void OnSelectedValuesChanged()
+    {
+        if (volumeChartRef?.Series != null)
+        {
+            foreach (var series in volumeChartRef.Series)
+            {
+                var seriesKey = _selectMap.FirstOrDefault(x => x.Value == series.Name).Key;
+
+                bool isVisible = _selectedValues.Contains(seriesKey);
+
+                if (isVisible)
+                    series.Show();  
+                else
+                    series.Hide();  
+            }
+
+            volumeChartRef.UpdateSeriesAsync();
+        }
+
+        Console.WriteLine("This hit");
+    }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        _stockData = (await _stockDataRepo.GetStockData("MSFT", 1)).ToList();
+        ConfigureChartOptions();
+    }
+
+    private void ConfigureChartOptions()
+    {
+        const string mainChartId = "mainChart";
+
+        mainChartOptions.Chart = new ApexCharts.Chart
+            {
+                Id = mainChartId,
+                Toolbar = new Toolbar
+                {
+                    Tools = new Tools { Zoomin = false, Zoomout = false },
+
+                }
+            };
+        mainChartOptions.Tooltip = new Tooltip
+            {
+                X = new TooltipX
+                {
+                    Format = "dd MMM"
+                }
+            };
+        mainChartOptions.Xaxis = new XAxis
+            {
+                Labels = new XAxisLabels
+                {
+                    Format = "dd MMM"
+                }
+            };
+        mainChartOptions.Yaxis = new List<YAxis>();
+        mainChartOptions.Yaxis.Add(new YAxis
+            {
+                Labels = new YAxisLabels
+                {
+                    Formatter = @"function (value) {
+                    return '$' + Number(value).toLocaleString();}"
+                }
+            }
+        );
+
+        volumeChartOptions.Chart = new ApexCharts.Chart
+            {
+                Id = "volumeChart",
+                Brush = new ApexCharts.Brush
+                {
+                    Enabled = true,
+                    Target = mainChartId
+                },
+                Selection = new ApexCharts.Selection
+                {
+                    Enabled = true,
+                    Xaxis = new ApexCharts.SelectionXaxis
+                    {
+                        Min = _stockData.Min(d => d.Date).ToUnixTimeMilliseconds(),
+                        Max = _stockData.Max(d => d.Date).ToUnixTimeMilliseconds()
+                    }
+                },
+
+            };
+        volumeChartOptions.Tooltip = new Tooltip
+            {
+                X = new TooltipX
+                {
+                    Format = "dd MMM"
+                }
+            };
+        volumeChartOptions.Xaxis = new XAxis
+            {
+                Labels = new XAxisLabels
+                {
+                    Format = "dd MMM"
+                }
+            };
+        volumeChartOptions.Yaxis = new List<YAxis>();
+        volumeChartOptions.Yaxis.Add(new YAxis
+            {
+                Labels = new YAxisLabels
+                {
+                    Formatter = @"function (value) {
+                    return Number(value).toLocaleString() + 'K';}"
+                },
+                SeriesName = "Volume",
+                Title = new AxisTitle { Text = "Volume" },
+                Opposite = true
+            });
+        volumeChartOptions.Yaxis.Add(new YAxis
+            {
+                SeriesName = "SMA",
+                Title = new AxisTitle { Text = "SMA" },
+                DecimalsInFloat = 2,
+                Show = false
+            });
+        volumeChartOptions.Yaxis.Add(new YAxis
+            {
+                SeriesName = "EMA",
+                Title = new AxisTitle { Text = "EMA" },
+                DecimalsInFloat = 2,
+            });
+        volumeChartOptions.Yaxis.Add(new YAxis
+            {
+                SeriesName = "MACD",
+                Title = new AxisTitle { Text = "MACD" },
+                DecimalsInFloat = 2,
+            });
+        volumeChartOptions.Yaxis.Add(new YAxis
+            {
+                SeriesName = "RSI",
+                Title = new AxisTitle { Text = "RSI" },
+                DecimalsInFloat = 2,
+            });
+        volumeChartOptions.Yaxis.Add(new YAxis
+            {
+                SeriesName = "Bollinger Band Upper",
+                Title = new AxisTitle { Text = "Bollinger Band Upper" },
+                DecimalsInFloat = 2,
+            });
+        volumeChartOptions.Yaxis.Add(new YAxis
+            {
+                SeriesName = "Bollinger Band Lower",
+                Title = new AxisTitle { Text = "Bollinger Band Lower" },
+                DecimalsInFloat = 2,
+            });
+    }
+
+    private void OnMount()
+    {
+        foreach (var series in volumeChartRef.Series)
+        {
+            var seriesKey = _selectMap.FirstOrDefault(x => x.Value == series.Name).Key;
+
+            bool isVisible = _selectedValues.Contains(seriesKey);
+
+            if (isVisible)
+                series.Show();
+            else
+                series.Hide();
+        }        
+    }
+
+    private void BrushScrolled(SelectionData<HistoricalStockDataDTO> selection)
+    {
+        var min = selection?.XAxis?.Min;
+        if (min != null)
+        {
+            XMin = DateTimeOffset.FromUnixTimeMilliseconds((long)min);
+        }
+
+        var max = selection?.XAxis?.Max;
+        if (max != null)
+        {
+            XMax = DateTimeOffset.FromUnixTimeMilliseconds((long)max);
+        }
+        StateHasChanged();
+    }
+}

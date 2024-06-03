@@ -9,10 +9,11 @@ namespace BotMarket2.Client.Repositories.StockData
     {
         private readonly HttpClient _http = httpFactory.CreateClient();
         private readonly string _hostUrl = manager.BaseUri;
+        private readonly JsonSerializerOptions jsonSerializerOptions = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
         public async Task<IEnumerable<HistoricalStockDataDTO>> GetStockDataAll(string symbol)
         {
-            var response = await _http.GetAsync($"{_hostUrl}/api/StockData/{symbol}");
+            var response = await _http.GetAsync($"{_hostUrl}api/StockData/{symbol}");
             if (response.IsSuccessStatusCode)
             {
                 var content = await response.Content.ReadAsStringAsync();
@@ -31,11 +32,11 @@ namespace BotMarket2.Client.Repositories.StockData
 
         public async Task<IEnumerable<HistoricalStockDataDTO>> GetStockData(string symbol, int yrsFromEndDate)
         {
-            var response = await _http.GetAsync($"{_hostUrl}/api/StockData/{symbol}/{yrsFromEndDate}");
+            var response = await _http.GetAsync($"{_hostUrl}api/StockData/{symbol}/{yrsFromEndDate}");
             if (response.IsSuccessStatusCode)
             {
                 var content = await response.Content.ReadAsStringAsync();
-                return JsonSerializer.Deserialize<IEnumerable<HistoricalStockDataDTO>>(content) ?? new List<HistoricalStockDataDTO>();
+                return JsonSerializer.Deserialize<IEnumerable<HistoricalStockDataDTO>>(content, jsonSerializerOptions) ?? new List<HistoricalStockDataDTO>();
             }
             else
             {

@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Skender.Stock.Indicators" Version="2.5.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\BotMarket2.Common\BotMarket2.Common.csproj" />
     <ProjectReference Include="..\BotMarket2.DAL\BotMarket2.DAL.csproj" />
   </ItemGroup>

@@ -11,6 +11,7 @@ using BotMarket2.DAL.Data.Seed;
 using BotMarket2.BAL.Services.StockData;
 using BotMarket2.Client.Shared;
 using BotMarket2.DAL.Data;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -45,7 +46,11 @@ builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.Requ
     .AddDefaultTokenProviders();
 
 builder.Services.AddControllers()
-    .AddApplicationPart(BotMarket2.Api.AssemblyReference.Assembly);
+    .AddApplicationPart(BotMarket2.Api.AssemblyReference.Assembly).AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+        options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+    });
 
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 builder.Services.AddScoped<BotMarket2.DAL.Data.Repository.StockData.IStockDataRepo, BotMarket2.DAL.Data.Repository.StockData.StockDataRepo>();
@@ -85,6 +90,8 @@ app.UseHttpsRedirection();
 
 app.UseStaticFiles();
 app.UseAntiforgery();
+
+app.MapControllers();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()

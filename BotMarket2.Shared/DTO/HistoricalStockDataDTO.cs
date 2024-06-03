@@ -9,5 +9,13 @@
         public decimal High { get; set; }
         public decimal Low { get; set; }
         public long Volume { get; set; }
+        public double? SMA { get; set; }
+        public double? EMA { get; set; }
+        public double? RSI { get; set; }
+        public double? MACD { get; set; }
+        public double? BollingerBandUpper { get; set; }
+        public double? BollingerBandLower { get; set; }
+        public decimal? SupportLevel { get; set; }
+        public decimal? ResistanceLevel { get; set; }
     }
 }
