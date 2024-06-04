@@ -15,7 +15,7 @@
     else
     {
         <MudItem xs="12" Style="height: 25%;">
-            <ApexChart TItem="HistoricalStockDataDTO" Title="MSFT Price History"
+            <ApexChart TItem="HistoricalStockDataDTO" Title="StockX Price History"
                        XAxisType="XAxisType.Datetime"
                        Options="mainChartOptions"
                        Height="@("100%")">
@@ -36,7 +36,7 @@
             </MudSelect>
         </MudItem>
         <MudItem xs="12" Style="@($"height: 25%;")">
-            <ApexChart TItem="HistoricalStockDataDTO" Title="MSFT Volume History"
+            <ApexChart TItem="HistoricalStockDataDTO" Title="StockX Indicators"
                        XAxisType="XAxisType.Datetime"
                        Options="volumeChartOptions"
                        Height="@("100%")"
@@ -111,6 +111,9 @@
                 }
             </ApexChart>
         </MudItem>
+        <MudItem xs="12">
+            <BotMarket2.Client.Components.UI.Backtest DataDTOs="_stockData" />
+        </MudItem>
     }
 </MudContainer>
 
@@ -144,6 +147,7 @@
     private void ConfigureChartOptions()
     {
         const string mainChartId = "mainChart";
+        const string groupName = "stockX";
 
         mainChartOptions.Chart = new ApexCharts.Chart
             {
@@ -152,7 +156,8 @@
                 {
                     Tools = new Tools { Zoomin = false, Zoomout = false },
 
-                }
+                },
+                Group = groupName
             };
         mainChartOptions.Tooltip = new Tooltip
             {
@@ -195,9 +200,9 @@
                     {
                         Min = _stockData.Min(d => d.Date).ToUnixTimeMilliseconds(),
                         Max = _stockData.Max(d => d.Date).ToUnixTimeMilliseconds()
-                    }
+                    },
                 },
-
+                Group = groupName
             };
         volumeChartOptions.Tooltip = new Tooltip
             {
@@ -211,7 +216,8 @@
                 Labels = new XAxisLabels
                 {
                     Format = "dd MMM"
-                }
+                },
+                TickPlacement = TickPlacement.On
             };
     }
 
@@ -265,7 +271,7 @@
             volumeChartOptions.Yaxis.Add(yAxis);
         }
 
-        await volumeChartRef.UpdateOptionsAsync(true, true, true);
+        await volumeChartRef.UpdateOptionsAsync(true, true, false);
         await volumeChartRef.RenderAsync();
     }
 

@@ -18,10 +18,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Components\Shared\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\BotMarket2.Shared\BotMarket2.Shared.csproj" />
   </ItemGroup>
 

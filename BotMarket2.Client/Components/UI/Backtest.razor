@@ -1,0 +1,91 @@
+﻿@page "/backtest"
+@using BotMarket2.Client.Models.TradingStrategy
+@using MudBlazor
+@using BotMarket2.Shared.DTO
+@inject ISnackbar Snackbar
+
+<h3>Backtest Configuration</h3>
+<MudPaper Class="pa-4" Elevation="1">
+    <MudGrid>
+        <MudItem xs="12" sm="6">
+            <MudDatePicker Label="Start Date" @bind-Date="startDate" MinDate="new DateTime(2023, 5, 30)" MaxDate="new DateTime(2024, 5, 30)" />
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <MudDatePicker Label="End Date" @bind-Date="endDate" MinDate="new DateTime(2023, 5, 30)" MaxDate="new DateTime(2024, 5, 30)" />
+        </MudItem>
+        <MudItem xs="12">
+            <MudSelect Label="Select Strategies" T="ITradingStrategy" MultiSelection="true" SelectedValuesChanged="OnSelectedValueChanged">
+                @foreach (var strategy in availableStrategies)
+                {
+                    <MudSelectItem Value="@strategy">@strategy.Name</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+        @foreach (var strategy in selectedStrategies)
+        {
+            <MudItem xs="12">
+                <MudTextField Label="@($"{strategy.Name} Lower Threshold")" T="string" ValueChanged="@(val => OnLowerThresholdChanged(val, strategy))" />
+                <MudTextField Label="@($"{strategy.Name} Upper Threshold")" T="string" ValueChanged="@(val => OnHigherThresholdChanged(val, strategy))" />
+            </MudItem>
+        }
+        <MudItem xs="12">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="RunBacktest">Run Backtest</MudButton>
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+@code {
+    private DateTime? startDate;
+    private DateTime? endDate;
+    private BotMarket2.Client.Models.Backtest.Backtest backtest;
+    private List<ITradingStrategy> availableStrategies = new List<ITradingStrategy> {
+        new RSIStrategy(),
+        new MACDCrossoverStrategy(),
+        new MovingAverageCrossoverStrategy(),
+        new BollingerBandStrategy(),
+        new SMATrendStrategy(),
+        new EMAReversionStrategy()
+    };
+    private List<ITradingStrategy> selectedStrategies = new List<ITradingStrategy>();
+
+    [Parameter]
+    public List<HistoricalStockDataDTO> DataDTOs { get; set; }
+
+    protected override void OnInitialized()
+    {
+        backtest = new BotMarket2.Client.Models.Backtest.Backtest(DataDTOs);
+        selectedStrategies.Add(availableStrategies.First(s => s.Name == "RSI Strategy"));
+    }
+
+    private void OnSelectedValueChanged(IEnumerable<ITradingStrategy> selectedValues)
+    {
+        selectedStrategies = selectedValues.ToList();
+    }
+
+    private void OnLowerThresholdChanged(string value, ITradingStrategy strategy)
+    {
+        strategy.UpdateParameters(new Dictionary<string, object>() { { "ThresholdLower", value } });
+    }
+
+    private void OnHigherThresholdChanged(string value, ITradingStrategy strategy)
+    {
+        strategy.UpdateParameters(new Dictionary<string, object>() { { "ThresholdUpper", value } });
+    }
+
+    private void RunBacktest()
+    {
+        if (!startDate.HasValue || !endDate.HasValue)
+        {
+            Snackbar.Add("Please select a valid date range for the backtest.", Severity.Warning);
+            return;
+        }
+
+        foreach (var strategy in selectedStrategies)
+        {
+            backtest.AddStrategy(strategy);
+        }
+
+        backtest.Run();
+        Snackbar.Add("Backtest complete!", Severity.Success);
+    }
+}

@@ -15,7 +15,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BotMarket2.Common", "BotMar
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BotMarket2.Api", "BotMarket2.Api\BotMarket2.Api.csproj", "{4EFBFE7A-F1B0-4D2D-9981-9C2FA75BC08A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BotMarket2.Shared", "BotMarket2.Shared\BotMarket2.Shared.csproj", "{CBD998BD-0D4F-4A1A-A767-9869B5F8C8AC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BotMarket2.Shared", "BotMarket2.Shared\BotMarket2.Shared.csproj", "{CBD998BD-0D4F-4A1A-A767-9869B5F8C8AC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
