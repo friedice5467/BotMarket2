@@ -6,6 +6,7 @@ namespace BotMarket2.Client.Models.TradingStrategy
     {
         public string Name => "RSI Strategy";
         public string Description => "Relative Strength Index Strategy. Buys when RSI is between threshold, else sell.";
+        public int SignalPriority { get; set; }
         private double thresholdLower = 30;
         private double thresholdUpper = 70;
 

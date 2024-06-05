@@ -6,6 +6,7 @@ namespace BotMarket2.Client.Models.TradingStrategy
     {
         public string Name => "EMA Reversion Strategy";
         public string Description => "Buy when the price is below the EMA and sell when the price is above the EMA, configurable by threshold.";
+        public int SignalPriority { get; set; }
         private double thresholdOver = 0.05;
         private double thresholdUnder = 0.05;
 

@@ -98,6 +98,8 @@
             return;
         }
 
+        backtest.ClearStrategies();
+
         foreach (var strategy in selectedStrategies)
         {
             backtest.AddStrategy(strategy);

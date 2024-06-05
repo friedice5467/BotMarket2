@@ -6,6 +6,7 @@ namespace BotMarket2.Client.Models.TradingStrategy
     {
         public string Name => "Moving Average Crossover";
         public string Description => "Moving Average Crossover, buying/selling at thresholds";
+        public int SignalPriority { get; set; }
         private double thresholdOver = 0.05;
         private double thresholdUnder = 0.05;
 

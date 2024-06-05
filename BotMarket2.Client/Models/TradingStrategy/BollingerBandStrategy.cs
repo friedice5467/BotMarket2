@@ -6,6 +6,7 @@ namespace BotMarket2.Client.Models.TradingStrategy
     {
         public string Name => "Bollinger Band Strategy";
         public string Description => "Bollinger Band Strategy, buying/selling at thresholds";
+        public int SignalPriority { get; set; }
         private double thresholdOver = 0.05;
         private double thresholdUnder = 0.05;
 

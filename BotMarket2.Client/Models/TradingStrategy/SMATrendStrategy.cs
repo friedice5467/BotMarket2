@@ -6,6 +6,7 @@ namespace BotMarket2.Client.Models.TradingStrategy
     {
         public string Name => "SMA Trend Strategy";
         public string Description => "Buy when the stock price is above the SMA, else sell. Configurable by threshold.";
+        public int SignalPriority { get; set; }
         private double thresholdOver = 0.05;
         private double thresholdUnder = 0.05;
 
