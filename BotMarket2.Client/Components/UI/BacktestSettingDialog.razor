@@ -1,0 +1,53 @@
+﻿@inject ISnackbar Snackbar
+@using BotMarket2.Client.Models.Backtest
+@using MudBlazor
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">Backtest Settings</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudSelect T="AggregationMode" Label="Select Aggregation Mode" @bind-Value="selectedMode">
+            @foreach (AggregationMode mode in Enum.GetValues(typeof(AggregationMode)))
+            {
+                <MudSelectItem Value="mode">@mode.ToString()</MudSelectItem>
+            }
+        </MudSelect>
+        <MudNumericField T="int" Label="Confirmation Threshold" @bind-Value="confirmationThreshold" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="ApplySettings">Apply</MudButton>
+    </DialogActions>
+</MudDialog>
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public BotMarket2.Client.Models.Backtest.Backtest Backtest { get; set; }
+
+    private AggregationMode selectedMode;
+    private int confirmationThreshold;
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+
+    private void ApplySettings()
+    {
+        if (Backtest != null)
+        {
+            Backtest.SetAdditionSettings(selectedMode, confirmationThreshold);
+            Snackbar.Add("Settings applied successfully.", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        if (Backtest != null)
+        {
+            selectedMode = Backtest.AggregationMode;
+            confirmationThreshold = Backtest.ConfirmationThreshold;
+        }
+    }
+}

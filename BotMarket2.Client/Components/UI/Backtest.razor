@@ -1,57 +1,87 @@
 ﻿@page "/backtest"
+@using BotMarket2.Client.Models.Backtest
 @using BotMarket2.Client.Models.TradingStrategy
 @using MudBlazor
 @using BotMarket2.Shared.DTO
+@using ApexCharts
 @inject ISnackbar Snackbar
+@inject IDialogService DialogService
 
-<h3>Backtest Configuration</h3>
-<MudPaper Class="pa-4" Elevation="1">
-    <MudGrid>
-        <MudItem xs="12" sm="6">
-            <MudDatePicker Label="Start Date" @bind-Date="startDate" MinDate="new DateTime(2023, 5, 30)" MaxDate="new DateTime(2024, 5, 30)" />
+<MudPaper Class="pa-4 mt-4" Outlined=true Elevation="1">
+    <MudGrid Class="pt-4">
+        <MudItem xs="12" md="3" Class="">
+            <MudPaper Class="pa-4" Elevation="1" Outlined=true>
+                <MudText Typo="Typo.h4">Backtest Configuration</MudText>
+                <MudGrid>
+                    <MudItem xs="12" sm="6">
+                        <MudDatePicker Label="Start Date" @bind-Date="startDate" MinDate="new DateTime(2023, 5, 30)" MaxDate="new DateTime(2024, 5, 30)" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudDatePicker Label="End Date" @bind-Date="endDate" MinDate="new DateTime(2023, 5, 30)" MaxDate="new DateTime(2024, 5, 30)" />
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudSelect Label="Select Strategies" T="ITradingStrategy" MultiSelection="true" Text="" SelectedValues="selectedStrategies" SelectedValuesChanged="OnSelectedValueChanged">
+                            @foreach (var strategy in availableStrategies)
+                            {
+                                <MudSelectItem Value="@strategy">@strategy.Name</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                    <MudItem xs="12" Style="max-height: 18rem; overflow-y:auto;">
+                    @foreach (var strategy in selectedStrategies)
+                    {
+                        var (lower, upper) = strategy.GetThresholds();
+                        
+                            <MudCard Outlined="true">
+                                <MudCardHeader>
+                                    <MudTooltip Text="@strategy.Description" Placement="Placement.Left" Delay="200" RootClass="w-100">
+                                        <MudGrid Spacing="12" Class="" Style="">
+                                            <MudItem xs="11" Class="d-flex align-items-center">
+                                                <MudText Class="strategy-name" Style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                                    @strategy.Name
+                                                </MudText>
+                                            </MudItem>
+                                            <MudItem xs="1">
+                                                <MudIconButton Icon="@Icons.Material.Filled.Info" Size="MudBlazor.Size.Small" />
+                                            </MudItem>
+                                        </MudGrid>
+                                    </MudTooltip>
+                                </MudCardHeader>
+                                <MudCardContent>
+                                    <MudNumericField Label="Lower Threshold" T="double" Value="@lower" Immediate="true" ValueChanged="@(val => OnLowerThresholdChanged(val.ToString(), strategy))" />
+                                    <MudNumericField Label="Upper Threshold" T="double" Value="@upper" Immediate="true" ValueChanged="@(val => OnHigherThresholdChanged(val.ToString(), strategy))" />
+                                </MudCardContent>
+                            </MudCard>
+                        
+                    }
+                    </MudItem>
+                    <MudItem xs="12" Class="justify-space-between d-flex">
+                        <MudButton Class="w-50 me-3" Variant="Variant.Filled" Color="MudBlazor.Color.Secondary" OnClick="@(async item => await OpenAdditionalSettingsAsync())">Additional Settings</MudButton>
+                        <MudButton Class="w-50" Variant="Variant.Filled" Color="MudBlazor.Color.Primary" OnClick="RunBacktestAsync">Run Backtest</MudButton>
+                    </MudItem>
+                </MudGrid>
+            </MudPaper>
         </MudItem>
-        <MudItem xs="12" sm="6">
-            <MudDatePicker Label="End Date" @bind-Date="endDate" MinDate="new DateTime(2023, 5, 30)" MaxDate="new DateTime(2024, 5, 30)" />
-        </MudItem>
-        <MudItem xs="12">
-            <MudSelect Label="Select Strategies" T="ITradingStrategy" MultiSelection="true" Text="" SelectedValues="selectedStrategies" SelectedValuesChanged="OnSelectedValueChanged">
-                @foreach (var strategy in availableStrategies)
-                {
-                    <MudSelectItem Value="@strategy">@strategy.Name</MudSelectItem>
-                }
-            </MudSelect>
-        </MudItem>
-        @foreach (var strategy in selectedStrategies)
-        {
-            var (lower, upper) = strategy.GetThresholds();
-            <MudItem xs="12" md="6">
-                <MudCard Outlined=true>
-                    <MudCardHeader>
-                        <CardHeaderContent>
-                            <MudText>
-                                @strategy.Name
-                                <MudTooltip Text="@strategy.Description">
-                                    <MudIconButton Icon="@Icons.Material.Filled.Info" />
-                                </MudTooltip>
-                            </MudText>
-                        </CardHeaderContent>
-                    </MudCardHeader>
-                    <MudCardContent>
-                        <MudText>
-                            Configure @strategy.Name parameters
-                        </MudText>
-                        <MudTextField Label="@($"{strategy.Name} Lower Threshold")" T="string" Value="lower.ToString()" ValueChanged="@(val => OnLowerThresholdChanged(val, strategy))" />
-                        <MudTextField Label="@($"{strategy.Name} Upper Threshold")" T="string" Value="upper.ToString()" ValueChanged="@(val => OnHigherThresholdChanged(val, strategy))" />
-                    </MudCardContent>
-                </MudCard>
-            </MudItem>
-        }
-        <MudItem xs="12">
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="RunBacktest">Run Backtest</MudButton>
+
+
+        <MudItem xs="12" md="9" Class="remh-20">
+            <ApexChart @ref="_simChartRef" Options="@_simChartOptions" Title="SimulatedResults" TItem="HistoricalStockDataDTO" Height="@("100%")">
+                <ApexPointSeries TItem="HistoricalStockDataDTO"
+                                 Items="@_simulateData"
+                                 Name="StockX Simulation"
+                                 SeriesType="SeriesType.Line"
+                                 XValue="x => x.Date"
+                                 YValue="x => x.CloseLast"
+                                 OrderBy="x => x.X"
+                                 Stroke="@(new SeriesStroke { Width = 2, Color="#1F15E5"})" />
+            </ApexChart>
+            @if (_isSimulating)
+            {
+                <MudProgressLinear Indeterminate=true Size="MudBlazor.Size.Large" />
+            }
         </MudItem>
     </MudGrid>
 </MudPaper>
-
 @code {
     private DateTime? startDate;
     private DateTime? endDate;
@@ -68,11 +98,53 @@
 
     [Parameter]
     public List<HistoricalStockDataDTO> DataDTOs { get; set; }
+    private List<HistoricalStockDataDTO> _simulateData { get; set; }
+    private ApexChart<HistoricalStockDataDTO> _simChartRef;
+    private ApexChartOptions<HistoricalStockDataDTO> _simChartOptions;
+    private bool _isSimulating;
 
     protected override void OnInitialized()
     {
         backtest = new BotMarket2.Client.Models.Backtest.Backtest(DataDTOs);
         selectedStrategies.Add(availableStrategies.First(s => s.Name == "RSI Strategy"));
+        _simulateData = new();
+        var orderedDtos = DataDTOs.OrderBy(x => x.Date);
+        startDate = orderedDtos.OrderBy(x => x.Date).First().Date;
+        endDate = orderedDtos.OrderBy(x => x.Date).Last().Date;
+        _simChartOptions = new ApexChartOptions<HistoricalStockDataDTO>()
+            {
+                NoData = new NoData { Text = "Run Simulation..." },
+                Grid = new Grid { Show = true },
+                Chart = new()
+                {
+                    Toolbar = new(){ Show = false}
+                }
+            };
+        _simChartOptions.Xaxis = new XAxis
+            {
+                Labels = new XAxisLabels
+                {
+                    Format = "dd MMM"
+                },
+                TickPlacement = TickPlacement.On
+            };
+        _simChartOptions.Tooltip = new Tooltip
+            {
+                X = new TooltipX
+                {
+                    Format = "dd MMM"
+                }
+            };
+        _simChartOptions.Yaxis = new List<YAxis>();
+        _simChartOptions.Yaxis.Add(new YAxis
+            {
+                Labels = new YAxisLabels
+                {
+                    Formatter = @"function (value) {
+                    return '$' + Number(value).toLocaleString();}"
+                }
+            }
+        );
     }
 
     private void OnSelectedValueChanged(IEnumerable<ITradingStrategy> selectedValues)
@@ -90,7 +162,14 @@
         strategy.UpdateParameters(new Dictionary<string, object>() { { "ThresholdUpper", value } });
     }
 
-    private void RunBacktest()
+    private async Task OpenAdditionalSettingsAsync()
+    {
+        var parameters = new DialogParameters<BacktestSettingDialog> { { x => x.Backtest, backtest } };
+        var dialog = DialogService.Show<BacktestSettingDialog>("Additional Settings", parameters);
+        var result = await dialog.Result;
+    }
+
+    private async Task RunBacktestAsync()
     {
         if (!startDate.HasValue || !endDate.HasValue)
         {
@@ -105,7 +184,45 @@
             backtest.AddStrategy(strategy);
         }
 
-        backtest.Run();
-        Snackbar.Add("Backtest complete!", Severity.Success);
+        try
+        {
+            _isSimulating = true;
+            await foreach (var result in backtest.RunAsync())
+            {
+                var dataPoint = DataDTOs.FirstOrDefault(sd => sd.Date == result.Date);
+                if (dataPoint != null)
+                {
+                    await AppendDataAsync(result, dataPoint);
+                }
+            }
+            Snackbar.Add("Backtest complete!", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"An error occurred during the backtest.{ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isSimulating = false;
+        }
     }
+
+    private async Task AppendDataAsync(SignalResult result, HistoricalStockDataDTO data)
+    {
+        await _simChartRef.AppendDataAsync(new List<HistoricalStockDataDTO> { data });
+        var annotation = new AnnotationsPoint
+            {
+                X = data.Date,
+                Y = (double)data.CloseLast,
+                Label = new() { Text = result.SignalTypeString },
+                Marker = new()
+                {
+                    FillColor = result.SignalType == SignalType.Buy ? "#00FF00" : "#FF0000",
+                    Shape = ShapeEnum.Circle,
+                    Size = (double)3,
+                },
+            };
+        await _simChartRef.AddPointAnnotationAsync(annotation, true);
+    }
+
 }

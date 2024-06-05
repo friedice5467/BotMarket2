@@ -4,6 +4,7 @@
 @using ApexCharts
 @inject IStockDataRepo _stockDataRepo
 @inject NavigationManager NavManager
+@inject IJSRuntime JSRuntime
 
 <PageTitle>Stock Sim</PageTitle>
 
@@ -14,7 +15,7 @@
     }
     else
     {
-        <MudItem xs="12" Style="height: 25%;">
+        <MudItem xs="12" Class="mh-25">
             <ApexChart TItem="HistoricalStockDataDTO" Title="StockX Price History"
                        XAxisType="XAxisType.Datetime"
                        Options="mainChartOptions"
@@ -35,7 +36,7 @@
                 }
             </MudSelect>
         </MudItem>
-        <MudItem xs="12" Style="@($"height: 25%;")">
+        <MudItem xs="12" Class="mh-25">
             <ApexChart TItem="HistoricalStockDataDTO" Title="StockX Indicators"
                        XAxisType="XAxisType.Datetime"
                        Options="volumeChartOptions"
@@ -44,11 +45,11 @@
                        OnMounted="@(async val => await RefreshYValuesAsync(true))"
                        @ref="@volumeChartRef">
 
-                @foreach(var val in _selectMap)
+                @foreach (var val in _selectMap)
                 {
-                    if(!val.Value) continue;
+                    if (!val.Value) continue;
 
-                    switch(val.Key)
+                    switch (val.Key)
                     {
                         case "SMA":
                             <ApexPointSeries TItem="HistoricalStockDataDTO"
@@ -111,9 +112,8 @@
                 }
             </ApexChart>
         </MudItem>
-        <MudItem xs="12">
-            <BotMarket2.Client.Components.UI.Backtest DataDTOs="_stockData" />
-        </MudItem>
+
+        <BotMarket2.Client.Components.UI.Backtest DataDTOs="_stockData" />
     }
 </MudContainer>
 
@@ -122,7 +122,7 @@
     private ApexChartOptions<HistoricalStockDataDTO> mainChartOptions = new ApexChartOptions<HistoricalStockDataDTO>();
     private ApexChartOptions<HistoricalStockDataDTO> volumeChartOptions = new ApexChartOptions<HistoricalStockDataDTO>();
     private ApexChart<HistoricalStockDataDTO> volumeChartRef;
-    private bool _initState = false;
+    private bool _isMount = false;
     private DateTimeOffset XMin;
     private DateTimeOffset XMax;
     private Dictionary<string, bool> _selectMap = new()
@@ -202,8 +202,10 @@
                         Max = _stockData.Max(d => d.Date).ToUnixTimeMilliseconds()
                     },
                 },
-                Group = groupName
+                Group = groupName,
+
             };
+
         volumeChartOptions.Tooltip = new Tooltip
             {
                 X = new TooltipX
@@ -230,14 +232,11 @@
         await RefreshYValuesAsync();
     }
 
-    private async Task RefreshYValuesAsync(bool? isInit = false)
+    private async Task RefreshYValuesAsync(bool isMount = false)
     {
-        if (_initState) return;
+        if (_isMount) return;
 
-        if (isInit == true)
-        {
-            _initState = true;
-        }
+        if (isMount) _isMount = true;
 
         var newYAxes = new List<YAxis>();
 
@@ -258,15 +257,17 @@
             }
         }
 
-        AddYAxisIfSelected( "SMA", "SMA", true, false);
-        AddYAxisIfSelected( "EMA", "EMA", true, false);
-        AddYAxisIfSelected("MACD", "MACD");
-        AddYAxisIfSelected( "RSI", "RSI");
-        AddYAxisIfSelected( "Bollinger Band Upper", "Bollinger Band Upper", true);
-        AddYAxisIfSelected( "Bollinger Band Lower", "Bollinger Band Lower", true);
+        var isMobile = await JSRuntime.InvokeAsync<bool>("isMobile");
+
+        AddYAxisIfSelected("SMA", "SMA", true, false);
+        AddYAxisIfSelected("EMA", "EMA", true, false);
+        AddYAxisIfSelected("MACD", "MACD", false, !isMobile);
+        AddYAxisIfSelected("RSI", "RSI", false, !isMobile);
+        AddYAxisIfSelected("Bollinger Band Upper", "Bollinger Band Upper", true, !isMobile);
+        AddYAxisIfSelected("Bollinger Band Lower", "Bollinger Band Lower", true, !isMobile);
         AddYAxisIfSelected("Volume", "Volume", false, false);
         volumeChartOptions.Yaxis = new();
-        foreach(var yAxis in newYAxes)
+        foreach (var yAxis in newYAxes)
         {
             volumeChartOptions.Yaxis.Add(yAxis);
         }
@@ -283,7 +284,7 @@
         }
         else
         {
-           return "red";
+            return "red";
         }
     }
 

@@ -1,5 +1,5 @@
-﻿using BotMarket2.Client.Models.TradingStrategy;
-using BotMarket2.Shared.DTO;
+﻿using BotMarket2.Shared.DTO;
+using BotMarket2.Client.Models.TradingStrategy;
 
 namespace BotMarket2.Client.Models.Backtest
 {
@@ -9,7 +9,7 @@ namespace BotMarket2.Client.Models.Backtest
         public List<HistoricalStockDataDTO> StockData { get; set; }
         public List<SignalResult> Results { get; set; }
         public AggregationMode AggregationMode { get; set; }
-        public int ConfirmationThreshold { get; set; } = 1; 
+        public int ConfirmationThreshold { get; set; } = 1;
 
         public Backtest(List<HistoricalStockDataDTO> stockData)
         {
@@ -28,31 +28,38 @@ namespace BotMarket2.Client.Models.Backtest
             strategies.Add(strategy);
         }
 
-        public void Run()
+        public void SetAdditionSettings(AggregationMode mode, int confirmationThreshold)
+        {
+            AggregationMode = mode;
+            ConfirmationThreshold = confirmationThreshold;
+        }
+
+        public async IAsyncEnumerable<SignalResult> RunAsync()
         {
             var dailySignals = new Dictionary<DateTime, List<SignalResult>>();
 
             foreach (var data in StockData)
             {
+                List<SignalResult> dailyResults = new List<SignalResult>();
                 foreach (var strategy in strategies)
                 {
                     bool signal = strategy.EvaluateCurr(data);
-                    if (!dailySignals.ContainsKey(data.Date))
-                        dailySignals[data.Date] = new();
-
-                    dailySignals[data.Date].Add(new SignalResult(signal, data.CloseLast, data.Date, strategy.Name, strategy.SignalPriority));
+                    var result = new SignalResult(signal, data.CloseLast, data.Date, strategy.Name, strategy.SignalPriority);
+                    dailyResults.Add(result);
+                    yield return result; 
+                    await Task.Delay(50); 
                 }
+                dailySignals[data.Date] = dailyResults;
             }
 
-            AggregateSignals(dailySignals);
+            Results.AddRange(AggregateSignals(dailySignals));
         }
 
-        private void AggregateSignals(Dictionary<DateTime, List<SignalResult>> dailySignals)
+        private IEnumerable<SignalResult> AggregateSignals(Dictionary<DateTime, List<SignalResult>> dailySignals)
         {
-            Results.Clear();
             foreach (var entry in dailySignals)
             {
-                SignalResult? finalSignal;
+                SignalResult? finalSignal = null;
                 switch (AggregationMode)
                 {
                     case AggregationMode.MajorityVote:
@@ -69,7 +76,9 @@ namespace BotMarket2.Client.Models.Backtest
                 }
 
                 if (finalSignal != null)
-                    Results.Add(finalSignal);
+                {
+                    yield return finalSignal; 
+                }
             }
         }
 
@@ -95,14 +104,14 @@ namespace BotMarket2.Client.Models.Backtest
             if (sellCount >= ConfirmationThreshold)
                 return new SignalResult(false, signals.First().Price, signals.First().Date, "Confirmed Sell", 0);
 
-            return null; 
+            return null;
         }
     }
+
     public enum AggregationMode
     {
         MajorityVote,
         SignalPriority,
         SignalConfirmation
     }
-
 }

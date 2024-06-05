@@ -50,6 +50,18 @@ h1:focus {
     border-color: #929292;
 }
 
-.h-100{
-    height: 100%;
+.mh-25 {
+    height: 25%;
+}
+.remh-20{
+    height: auto;
+}
+@media only screen and (max-width: 900px) {
+.mh-25 {
+        height: 50%;
+    }
+
+.remh-20{
+    height: 20rem;
+}
 }
