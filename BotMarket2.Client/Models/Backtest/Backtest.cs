@@ -28,10 +28,10 @@ namespace BotMarket2.Client.Models.Backtest
                     {
                         Console.WriteLine($"Signal triggered by {strategy.Name} on {data.Date}: Current");
                     }
-                    else if(strategy.EvaluatePrev(data, StockData[StockData.IndexOf(data) - 1]) && IsComparePrev)
-                    {
-                        Console.WriteLine($"Signal triggered by {strategy.Name} on {data.Date}: Previous");
-                    }
+                    //else if(strategy.EvaluatePrev(data, StockData[StockData.IndexOf(data) - 1]) && IsComparePrev)
+                    //{
+                    //    Console.WriteLine($"Signal triggered by {strategy.Name} on {data.Date}: Previous");
+                    //}
                 
                 }
             }

@@ -5,6 +5,7 @@ namespace BotMarket2.Client.Models.TradingStrategy
     public class EMAReversionStrategy : ITradingStrategy
     {
         public string Name => "EMA Reversion Strategy";
+        public string Description => "Buy when the price is below the EMA and sell when the price is above the EMA, configurable by threshold.";
         private double thresholdOver = 0.05;
         private double thresholdUnder = 0.05;
 
@@ -30,6 +31,11 @@ namespace BotMarket2.Client.Models.TradingStrategy
                 thresholdOver = Convert.ToDouble(parameters["ThresholdOver"]);
             if (parameters.ContainsKey("ThresholdUnder"))
                 thresholdUnder = Convert.ToDouble(parameters["ThresholdUnder"]);
+        }
+
+        public (double, double) GetThresholds()
+        {
+            return (thresholdUnder, thresholdOver);
         }
     }
 

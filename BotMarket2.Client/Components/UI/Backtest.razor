@@ -14,7 +14,7 @@
             <MudDatePicker Label="End Date" @bind-Date="endDate" MinDate="new DateTime(2023, 5, 30)" MaxDate="new DateTime(2024, 5, 30)" />
         </MudItem>
         <MudItem xs="12">
-            <MudSelect Label="Select Strategies" T="ITradingStrategy" MultiSelection="true" SelectedValuesChanged="OnSelectedValueChanged">
+            <MudSelect Label="Select Strategies" T="ITradingStrategy" MultiSelection="true" Text="" SelectedValues="selectedStrategies" SelectedValuesChanged="OnSelectedValueChanged">
                 @foreach (var strategy in availableStrategies)
                 {
                     <MudSelectItem Value="@strategy">@strategy.Name</MudSelectItem>
@@ -23,9 +23,27 @@
         </MudItem>
         @foreach (var strategy in selectedStrategies)
         {
-            <MudItem xs="12">
-                <MudTextField Label="@($"{strategy.Name} Lower Threshold")" T="string" ValueChanged="@(val => OnLowerThresholdChanged(val, strategy))" />
-                <MudTextField Label="@($"{strategy.Name} Upper Threshold")" T="string" ValueChanged="@(val => OnHigherThresholdChanged(val, strategy))" />
+            var (lower, upper) = strategy.GetThresholds();
+            <MudItem xs="12" md="6">
+                <MudCard Outlined=true>
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText>
+                                @strategy.Name
+                                <MudTooltip Text="@strategy.Description">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Info" />
+                                </MudTooltip>
+                            </MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudText>
+                            Configure @strategy.Name parameters
+                        </MudText>
+                        <MudTextField Label="@($"{strategy.Name} Lower Threshold")" T="string" Value="lower.ToString()" ValueChanged="@(val => OnLowerThresholdChanged(val, strategy))" />
+                        <MudTextField Label="@($"{strategy.Name} Upper Threshold")" T="string" Value="upper.ToString()" ValueChanged="@(val => OnHigherThresholdChanged(val, strategy))" />
+                    </MudCardContent>
+                </MudCard>
             </MudItem>
         }
         <MudItem xs="12">

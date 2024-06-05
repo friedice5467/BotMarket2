@@ -5,6 +5,7 @@ namespace BotMarket2.Client.Models.TradingStrategy
     public class MACDCrossoverStrategy : ITradingStrategy
     {
         public string Name => "MACD Crossover";
+        public string Description => "MACD Crossover, buying/selling at thresholds";
         private double thresholdOver = 0.05;
         private double thresholdUnder = 0.05;
 
@@ -33,6 +34,11 @@ namespace BotMarket2.Client.Models.TradingStrategy
                 thresholdOver = Convert.ToDouble(parameters["ThresholdOver"]);
             if (parameters.ContainsKey("ThresholdUnder"))
                 thresholdUnder = Convert.ToDouble(parameters["ThresholdUnder"]);
+        }
+
+        public (double, double) GetThresholds()
+        {
+            return (thresholdUnder, thresholdOver);
         }
     }
 

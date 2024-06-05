@@ -5,9 +5,9 @@ namespace BotMarket2.Client.Models.TradingStrategy
     public class RSIStrategy : ITradingStrategy
     {
         public string Name => "RSI Strategy";
-
-        private int thresholdLower = 30;
-        private int thresholdUpper = 70;
+        public string Description => "Relative Strength Index Strategy. Buys when RSI is between threshold, else sell.";
+        private double thresholdLower = 30;
+        private double thresholdUpper = 70;
 
         public bool EvaluateCurr(HistoricalStockDataDTO data)
         {
@@ -22,9 +22,14 @@ namespace BotMarket2.Client.Models.TradingStrategy
         public void UpdateParameters(Dictionary<string, object> parameters)
         {
             if (parameters.ContainsKey("ThresholdLower"))
-                thresholdLower = Convert.ToInt32(parameters["ThresholdLower"]);
+                thresholdLower = Convert.ToDouble(parameters["ThresholdLower"]);
             if (parameters.ContainsKey("ThresholdUpper"))
-                thresholdUpper = Convert.ToInt32(parameters["ThresholdUpper"]);
+                thresholdUpper = Convert.ToDouble(parameters["ThresholdUpper"]);
+        }
+
+        public (double, double) GetThresholds()
+        {
+            return (thresholdLower, thresholdUpper);
         }
     }
 
