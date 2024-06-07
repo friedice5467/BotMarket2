@@ -1,6 +1,7 @@
 ﻿@page "/backtest"
 @using BotMarket2.Client.Models.Backtest
 @using BotMarket2.Client.Models.TradingStrategy
+@using BotMarket2.Client.Shared
 @using MudBlazor
 @using BotMarket2.Shared.DTO
 @using ApexCharts
@@ -65,12 +66,12 @@
 
 
         <MudItem xs="12" md="9" Class="remh-20">
-            <ApexChart @ref="_simChartRef" Options="@_simChartOptions" Title="SimulatedResults" TItem="HistoricalStockDataDTO" Height="@("100%")">
+            <ApexChart @ref="_simChartRef" Options="@_simChartOptions" Title="SimulatedResults" XAxisType="XAxisType.Datetime" TItem="HistoricalStockDataDTO" Height="@("100%")">
                 <ApexPointSeries TItem="HistoricalStockDataDTO"
                                  Items="@_simulateData"
                                  Name="StockX Simulation"
                                  SeriesType="SeriesType.Line"
-                                 XValue="x => x.Date"
+                                 XValue="@(x => x.Date)"
                                  YValue="x => x.CloseLast"
                                  OrderBy="x => x.X"
                                  Stroke="@(new SeriesStroke { Width = 2, Color="#1F15E5"})" />
@@ -105,10 +106,10 @@
 
     protected override void OnInitialized()
     {
-        backtest = new BotMarket2.Client.Models.Backtest.Backtest(DataDTOs);
+        var orderedDtos = DataDTOs.OrderBy(x => x.Date);
+        backtest = new BotMarket2.Client.Models.Backtest.Backtest(orderedDtos.ToList());
         selectedStrategies.Add(availableStrategies.First(s => s.Name == "RSI Strategy"));
         _simulateData = new();
-        var orderedDtos = DataDTOs.OrderBy(x => x.Date);
         startDate = orderedDtos.OrderBy(x => x.Date).First().Date;
         endDate = orderedDtos.OrderBy(x => x.Date).Last().Date;
         _simChartOptions = new ApexChartOptions<HistoricalStockDataDTO>()
@@ -118,21 +119,6 @@
                 Chart = new()
                 {
                     Toolbar = new(){ Show = false}
-                }
-            };
-        _simChartOptions.Xaxis = new XAxis
-            {
-                Labels = new XAxisLabels
-                {
-                    Format = "dd MMM"
-                },
-                TickPlacement = TickPlacement.On
-            };
-        _simChartOptions.Tooltip = new Tooltip
-            {
-                X = new TooltipX
-                {
-                    Format = "dd MMM"
                 }
             };
         _simChartOptions.Yaxis = new List<YAxis>();
@@ -177,6 +163,8 @@
             return;
         }
 
+        backtest.SetDateRange(startDate.Value, endDate.Value);
+
         backtest.ClearStrategies();
 
         foreach (var strategy in selectedStrategies)
@@ -187,6 +175,7 @@
         try
         {
             _isSimulating = true;
+            _simChartRef.Series.Clear();
             await foreach (var result in backtest.RunAsync())
             {
                 var dataPoint = DataDTOs.FirstOrDefault(sd => sd.Date == result.Date);
@@ -210,16 +199,19 @@
     private async Task AppendDataAsync(SignalResult result, HistoricalStockDataDTO data)
     {
         await _simChartRef.AppendDataAsync(new List<HistoricalStockDataDTO> { data });
+        var chardId = _simChartRef.ChartId;
+        if(result.SignalType == SignalType.None) return; 
+
         var annotation = new AnnotationsPoint
             {
-                X = data.Date,
+                X = data.Date.ToTimeStamp(),
                 Y = (double)data.CloseLast,
                 Label = new() { Text = result.SignalTypeString },
                 Marker = new()
                 {
                     FillColor = result.SignalType == SignalType.Buy ? "#00FF00" : "#FF0000",
                     Shape = ShapeEnum.Circle,
-                    Size = (double)3,
+                    Size = (double)2,
                 },
             };
         await _simChartRef.AddPointAnnotationAsync(annotation, true);

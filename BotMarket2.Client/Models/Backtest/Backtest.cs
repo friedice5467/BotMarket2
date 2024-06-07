@@ -10,12 +10,20 @@ namespace BotMarket2.Client.Models.Backtest
         public List<SignalResult> Results { get; set; }
         public AggregationMode AggregationMode { get; set; }
         public int ConfirmationThreshold { get; set; } = 1;
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
 
         public Backtest(List<HistoricalStockDataDTO> stockData)
         {
             StockData = stockData;
             Results = new List<SignalResult>();
             AggregationMode = AggregationMode.MajorityVote;
+        }
+
+        public void SetDateRange(DateTime startDate, DateTime endDate)
+        {
+            StartDate = startDate;
+            EndDate = endDate;
         }
 
         public void ClearStrategies()
@@ -37,23 +45,27 @@ namespace BotMarket2.Client.Models.Backtest
         public async IAsyncEnumerable<SignalResult> RunAsync()
         {
             var dailySignals = new Dictionary<DateTime, List<SignalResult>>();
-
-            foreach (var data in StockData)
+            var filteredStockData = StockData.Where(data => data.Date >= StartDate && data.Date <= EndDate).ToList();
+            foreach (var data in filteredStockData)
             {
                 List<SignalResult> dailyResults = new List<SignalResult>();
                 foreach (var strategy in strategies)
                 {
-                    bool signal = strategy.EvaluateCurr(data);
+                    bool? signal = strategy.EvaluateCurr(data);
+
                     var result = new SignalResult(signal, data.CloseLast, data.Date, strategy.Name, strategy.SignalPriority);
                     dailyResults.Add(result);
-                    yield return result; 
-                    await Task.Delay(50); 
+                    yield return result;
+                    await Task.Delay(50);
+                    
                 }
                 dailySignals[data.Date] = dailyResults;
+                
             }
 
             Results.AddRange(AggregateSignals(dailySignals));
         }
+
 
         private IEnumerable<SignalResult> AggregateSignals(Dictionary<DateTime, List<SignalResult>> dailySignals)
         {

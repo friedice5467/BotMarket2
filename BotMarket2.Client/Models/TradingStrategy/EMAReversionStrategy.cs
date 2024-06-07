@@ -10,10 +10,10 @@ namespace BotMarket2.Client.Models.TradingStrategy
         private double thresholdOver = 0.05;
         private double thresholdUnder = 0.05;
 
-        public bool EvaluateCurr(HistoricalStockDataDTO data)
+        public bool? EvaluateCurr(HistoricalStockDataDTO data)
         {
             if (data.EMA == null)
-                return false;
+                return null;
 
             return (double)data.CloseLast < data.EMA * (1 - thresholdUnder);
         }

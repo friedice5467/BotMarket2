@@ -7,7 +7,7 @@ namespace BotMarket2.Client.Models.TradingStrategy
         string Name { get; }
         string Description { get; }
         int SignalPriority { get; set; }
-        bool EvaluateCurr(HistoricalStockDataDTO data);
+        bool? EvaluateCurr(HistoricalStockDataDTO data);
         bool EvaluatePrev(HistoricalStockDataDTO data, HistoricalStockDataDTO prev);
         void UpdateParameters(Dictionary<string, object> parameters);
         /// <summary>

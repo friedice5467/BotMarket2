@@ -2,9 +2,9 @@
 {
     public class SignalResult
     {
-        public SignalResult(bool isBuy, decimal price, DateTime date, string name, int strategyPriority)
+        public SignalResult(bool? isBuy, decimal price, DateTime date, string name, int strategyPriority)
         {
-            SignalType = isBuy ? SignalType.Buy : SignalType.Sell;
+            SignalType = isBuy.HasValue ? isBuy.Value ? SignalType.Buy : SignalType.Sell : SignalType.None;
             Price = price;
             Date = date;
             Name = name;
@@ -21,6 +21,7 @@
     public enum SignalType
     {
         Buy,
-        Sell
+        Sell,
+        None
     }
 }
