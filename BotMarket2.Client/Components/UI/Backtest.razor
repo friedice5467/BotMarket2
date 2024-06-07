@@ -7,6 +7,7 @@
 @using ApexCharts
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
+@inject IJSRuntime JSRuntime
 
 <MudPaper Class="pa-4 mt-4" Outlined=true Elevation="1">
     <MudGrid Class="pt-4">
@@ -35,7 +36,7 @@
                         
                             <MudCard Outlined="true">
                                 <MudCardHeader>
-                                    <MudTooltip Text="@strategy.Description" Placement="Placement.Left" Delay="200" RootClass="w-100">
+                                    <MudTooltip Text="@strategy.Description" Placement="Placement.Right" Style="max-width: 12rem;" Delay="200" RootClass="w-100">
                                         <MudGrid Spacing="12" Class="" Style="">
                                             <MudItem xs="11" Class="d-flex align-items-center">
                                                 <MudText Class="strategy-name" Style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
@@ -43,7 +44,7 @@
                                                 </MudText>
                                             </MudItem>
                                             <MudItem xs="1">
-                                                <MudIconButton Icon="@Icons.Material.Filled.Info" Size="MudBlazor.Size.Small" />
+                                                <MudIconButton Icon="@Icons.Material.Filled.Info" Size="MudBlazor.Size.Small"/>
                                             </MudItem>
                                         </MudGrid>
                                     </MudTooltip>
@@ -86,7 +87,7 @@
 @code {
     private DateTime? startDate;
     private DateTime? endDate;
-    private BotMarket2.Client.Models.Backtest.Backtest backtest;
+    private BotMarket2.Client.Models.Backtest.Backtest backtest = default!;
     private List<ITradingStrategy> availableStrategies = new List<ITradingStrategy> {
         new RSIStrategy(),
         new MACDCrossoverStrategy(),
@@ -98,16 +99,16 @@
     private List<ITradingStrategy> selectedStrategies = new List<ITradingStrategy>();
 
     [Parameter]
-    public List<HistoricalStockDataDTO> DataDTOs { get; set; }
-    private List<HistoricalStockDataDTO> _simulateData { get; set; }
-    private ApexChart<HistoricalStockDataDTO> _simChartRef;
-    private ApexChartOptions<HistoricalStockDataDTO> _simChartOptions;
+    public List<HistoricalStockDataDTO> DataDTOs { get; set; } = new();
+    private List<HistoricalStockDataDTO> _simulateData { get; set; } = new();
+    private ApexChart<HistoricalStockDataDTO> _simChartRef = default!;
+    private ApexChartOptions<HistoricalStockDataDTO> _simChartOptions = default!;
     private bool _isSimulating;
 
     protected override void OnInitialized()
     {
         var orderedDtos = DataDTOs.OrderBy(x => x.Date);
-        backtest = new BotMarket2.Client.Models.Backtest.Backtest(orderedDtos.ToList());
+        backtest = new BotMarket2.Client.Models.Backtest.Backtest(orderedDtos.ToList(), JSRuntime);
         selectedStrategies.Add(availableStrategies.First(s => s.Name == "RSI Strategy"));
         _simulateData = new();
         startDate = orderedDtos.OrderBy(x => x.Date).First().Date;
@@ -118,7 +119,7 @@
                 Grid = new Grid { Show = true },
                 Chart = new()
                 {
-                    Toolbar = new(){ Show = false}
+                    Toolbar = new(){ Show = false},
                 }
             };
         _simChartOptions.Yaxis = new List<YAxis>();
@@ -171,12 +172,12 @@
         {
             backtest.AddStrategy(strategy);
         }
-
+        await _simChartRef.UpdateSeriesAsync(true);
         try
         {
             _isSimulating = true;
-            _simChartRef.Series.Clear();
-            await foreach (var result in backtest.RunAsync())
+
+            await foreach (SignalResult result in backtest.RunAsync())
             {
                 var dataPoint = DataDTOs.FirstOrDefault(sd => sd.Date == result.Date);
                 if (dataPoint != null)
@@ -184,6 +185,7 @@
                     await AppendDataAsync(result, dataPoint);
                 }
             }
+            var check = _simulateData;
             Snackbar.Add("Backtest complete!", Severity.Success);
         }
         catch (Exception ex)

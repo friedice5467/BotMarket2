@@ -18,7 +18,7 @@ namespace BotMarket2.Client.Models.TradingStrategy
             return (double)data.CloseLast > data.SMA * (1 + thresholdOver);
         }
         
-        public bool EvaluatePrev(HistoricalStockDataDTO data, HistoricalStockDataDTO prev)
+        public bool? EvaluatePrev(HistoricalStockDataDTO data, HistoricalStockDataDTO prev)
         {
             if (data.SMA == null || prev.SMA == null)
                 return false;

@@ -5,9 +5,9 @@ namespace BotMarket2.Client.Models.TradingStrategy
     public class RSIStrategy : ITradingStrategy
     {
         public string Name => "RSI Strategy";
-        public string Description => $"RSI levels below lower threshold, {thresholdLower}, generate buy signals and indicate an oversold or undervalued condition. RSI levels above threshold higher, {thresholdUpper}, generate sell signals and suggest that a security is overbought or overvalued.";
+        public string Description => $"RSI levels below lower threshold, {thresholdLower}, generate buy signals and indicate an oversold or undervalued condition. RSI levels above threshold higher, {thresholdUpper}, generate sell signals and suggest that a security is overbought or overvalued. Current calculated RSI values are based on a 14 day period.";
         public int SignalPriority { get; set; }
-        private double thresholdLower = 30;
+        private double thresholdLower = 40;
         private double thresholdUpper = 70;
 
         /// <summary>
@@ -29,7 +29,7 @@ namespace BotMarket2.Client.Models.TradingStrategy
             return null;
         }
 
-        public bool EvaluatePrev(HistoricalStockDataDTO data, HistoricalStockDataDTO prev)
+        public bool? EvaluatePrev(HistoricalStockDataDTO data, HistoricalStockDataDTO prev)
         {
             return data.RSI < thresholdLower && prev.RSI > thresholdLower || data.RSI > thresholdUpper && prev.RSI < thresholdUpper;
         }

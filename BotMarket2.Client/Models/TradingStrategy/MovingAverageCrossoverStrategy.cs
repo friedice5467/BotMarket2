@@ -18,7 +18,7 @@ namespace BotMarket2.Client.Models.TradingStrategy
             return current.EMA < current.SMA - thresholdUnder || current.EMA > current.SMA + thresholdOver;
         }
 
-        public bool EvaluatePrev(HistoricalStockDataDTO current, HistoricalStockDataDTO previous)
+        public bool? EvaluatePrev(HistoricalStockDataDTO current, HistoricalStockDataDTO previous)
         {
             if (previous.EMA == null || previous.SMA == null || current.EMA == null || current.SMA == null)
                 return false;

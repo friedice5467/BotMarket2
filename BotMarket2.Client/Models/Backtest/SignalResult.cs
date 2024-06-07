@@ -14,7 +14,7 @@
         public decimal Price { get; set; }
         public DateTime Date { get; set; }
         public string Name { get; set; }
-        public string SignalTypeString => SignalType == SignalType.Buy ? "Buy" : "Sell";
+        public string SignalTypeString => SignalType == SignalType.None ? "No Signal" : SignalType == SignalType.Buy ? "Buy" : "Sell";
         public int StrategyPriority { get; set; }
     }
 

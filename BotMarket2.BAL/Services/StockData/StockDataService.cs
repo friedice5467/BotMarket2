@@ -1,4 +1,5 @@
-﻿using BotMarket2.Common.Models;
+﻿using BotMarket2.Client.Models.MACD;
+using BotMarket2.Common.Models;
 using BotMarket2.DAL.Data.Repository.StockData;
 using BotMarket2.Shared;
 using BotMarket2.Shared.DTO;
@@ -34,7 +35,7 @@ namespace BotMarket2.BAL.Services.StockData
             var smaDictionary = smaResults.ToDictionary(x => x.Date, x => x.Sma);
             var emaDictionary = emaResults.ToDictionary(x => x.Date, x => x.Ema);
             var rsiDictionary = rsiResults.ToDictionary(x => x.Date, x => x.Rsi);
-            var macdDictionary = macdResults.ToDictionary(x => x.Date, x => x.Macd);
+            var macdDictionary = macdResults.ToDictionary(x => x.Date, x => x);
             var bbDictionary = bbResults.ToDictionary(x => x.Date, x => x);
 
             List<HistoricalStockDataDTO> dtos = new();
@@ -45,7 +46,8 @@ namespace BotMarket2.BAL.Services.StockData
                 dto.SMA = smaDictionary.TryGetValue(data.Date, out var sma) ? sma : null;
                 dto.EMA = emaDictionary.TryGetValue(data.Date, out var ema) ? ema : null;
                 dto.RSI = rsiDictionary.TryGetValue(data.Date, out var rsi) ? rsi : null;
-                dto.MACD = macdDictionary.TryGetValue(data.Date, out var macd) ? macd : null;
+
+                dto.MACD = macdDictionary.TryGetValue(data.Date, out var macd) ? MACDConvertor(macd) : null;
 
                 if (bbDictionary.TryGetValue(data.Date, out var bb))
                 {
@@ -57,6 +59,18 @@ namespace BotMarket2.BAL.Services.StockData
             }
 
             return dtos;
+        }
+
+        private static MacdResultDTO MACDConvertor(MacdResult macdResult)
+        {
+            return new MacdResultDTO()
+            {
+                Macd = macdResult.Macd,
+                Signal = macdResult.Signal,
+                Histogram = macdResult.Histogram,
+                FastEma = macdResult.FastEma,
+                SlowEma = macdResult.SlowEma
+            };
         }
     }
 }

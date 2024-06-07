@@ -12,13 +12,19 @@ namespace BotMarket2.Client.Models.TradingStrategy
 
         public bool? EvaluateCurr(HistoricalStockDataDTO data)
         {
-            if (data.BollingerBandUpper == null || data.BollingerBandLower == null)
+            if (!data.BollingerBandUpper.HasValue || !data.BollingerBandLower.HasValue)
                 return null;
 
-            return (double)data.CloseLast > data.BollingerBandUpper + thresholdOver || (double)data.CloseLast < data.BollingerBandLower - thresholdUnder;
+            if ((double)data.CloseLast > data.BollingerBandUpper + thresholdOver)
+                return false;
+
+            if ((double)data.CloseLast < data.BollingerBandLower - thresholdUnder)
+                return true; 
+
+            return null;
         }
 
-        public bool EvaluatePrev(HistoricalStockDataDTO data, HistoricalStockDataDTO prev)
+        public bool? EvaluatePrev(HistoricalStockDataDTO data, HistoricalStockDataDTO prev)
         {
             if (data.BollingerBandUpper == null || data.BollingerBandLower == null || prev.BollingerBandLower == null || prev.BollingerBandUpper == null)
                 return false;

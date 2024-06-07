@@ -1,5 +1,7 @@
 ﻿using BotMarket2.Shared.DTO;
 using BotMarket2.Client.Models.TradingStrategy;
+using Microsoft.JSInterop;
+using System.Text.Json;
 
 namespace BotMarket2.Client.Models.Backtest
 {
@@ -9,15 +11,17 @@ namespace BotMarket2.Client.Models.Backtest
         public List<HistoricalStockDataDTO> StockData { get; set; }
         public List<SignalResult> Results { get; set; }
         public AggregationMode AggregationMode { get; set; }
-        public int ConfirmationThreshold { get; set; } = 1;
+        public int ConfirmationThreshold { get; set; } = 2;
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
+        private IJSRuntime jsRuntime;
 
-        public Backtest(List<HistoricalStockDataDTO> stockData)
+        public Backtest(List<HistoricalStockDataDTO> stockData, IJSRuntime jsRuntime)
         {
             StockData = stockData;
             Results = new List<SignalResult>();
             AggregationMode = AggregationMode.MajorityVote;
+            this.jsRuntime = jsRuntime;
         }
 
         public void SetDateRange(DateTime startDate, DateTime endDate)
@@ -44,28 +48,70 @@ namespace BotMarket2.Client.Models.Backtest
 
         public async IAsyncEnumerable<SignalResult> RunAsync()
         {
-            var dailySignals = new Dictionary<DateTime, List<SignalResult>>();
+            var dailySignals = new List<SignalResult>();
             var filteredStockData = StockData.Where(data => data.Date >= StartDate && data.Date <= EndDate).ToList();
             foreach (var data in filteredStockData)
             {
                 List<SignalResult> dailyResults = new List<SignalResult>();
+                SignalResult? result = null;
                 foreach (var strategy in strategies)
                 {
-                    bool? signal = strategy.EvaluateCurr(data);
+                    if(!strategy.Name.Contains("MACD"))
+                    {
+                        bool? signal = strategy.EvaluateCurr(data);
 
-                    var result = new SignalResult(signal, data.CloseLast, data.Date, strategy.Name, strategy.SignalPriority);
-                    dailyResults.Add(result);
-                    yield return result;
-                    await Task.Delay(50);
+                        result = new SignalResult(signal, data.CloseLast, data.Date, strategy.Name, strategy.SignalPriority);
+                        dailyResults.Add(result);
+                    }
+                    else
+                    {
+                        if (filteredStockData.IndexOf(data) > 0)
+                        {
+                            bool? signal = strategy.EvaluatePrev(data, filteredStockData[filteredStockData.IndexOf(data) - 1]);
+
+                            result = new SignalResult(signal, data.CloseLast, data.Date, strategy.Name, strategy.SignalPriority);
+                            dailyResults.Add(result);
+                        }
+                    }
                     
                 }
-                dailySignals[data.Date] = dailyResults;
-                
+                if(dailyResults.Count == 2)
+                {
+                    await jsRuntime.InvokeVoidAsync("console.log", JsonSerializer.Serialize(dailyResults));
+                }
+                if(dailyResults.Count == 0)
+                {
+                    dailyResults.Add(new(null, data.CloseLast, data.Date, "No Signal", 0));
+                }
+                result = AggregateSignals(dailyResults);
+                yield return result;
+                await Task.Delay(50);
             }
 
-            Results.AddRange(AggregateSignals(dailySignals));
+            Results.AddRange(dailySignals);
         }
 
+
+        private SignalResult AggregateSignals(List<SignalResult> signals)
+        {
+            SignalResult finalSignal;
+            switch (AggregationMode)
+            {
+                case AggregationMode.MajorityVote:
+                    finalSignal = MajorityVote(signals);
+                    break;
+                case AggregationMode.SignalPriority:
+                    finalSignal = SignalPriority(signals);
+                    break;
+                case AggregationMode.SignalConfirmation:
+                    finalSignal = SignalConfirmation(signals);
+                    break;
+                default:
+                    throw new InvalidOperationException("Invalid aggregation mode.");
+            }
+
+            return finalSignal;
+        }
 
         private IEnumerable<SignalResult> AggregateSignals(Dictionary<DateTime, List<SignalResult>> dailySignals)
         {
@@ -98,7 +144,12 @@ namespace BotMarket2.Client.Models.Backtest
         {
             int buys = signals.Count(sr => sr.SignalType == SignalType.Buy);
             int sells = signals.Count(sr => sr.SignalType == SignalType.Sell);
-            bool isBuy = buys > sells;
+            int holds = signals.Count(sr => sr.SignalType == SignalType.None);
+            bool? isBuy = null;
+            if (buys > sells && buys > holds)
+                isBuy = true;
+            else if (sells > buys && sells > holds)
+                isBuy = false;
             return new SignalResult(isBuy, signals.First().Price, signals.First().Date, "Majority Vote", 0);
         }
 
@@ -107,7 +158,7 @@ namespace BotMarket2.Client.Models.Backtest
             return signals.OrderByDescending(sr => sr.StrategyPriority).First();
         }
 
-        private SignalResult? SignalConfirmation(List<SignalResult> signals)
+        private SignalResult SignalConfirmation(List<SignalResult> signals)
         {
             int buyCount = signals.Count(sr => sr.SignalType == SignalType.Buy);
             int sellCount = signals.Count(sr => sr.SignalType == SignalType.Sell);
@@ -116,7 +167,7 @@ namespace BotMarket2.Client.Models.Backtest
             if (sellCount >= ConfirmationThreshold)
                 return new SignalResult(false, signals.First().Price, signals.First().Date, "Confirmed Sell", 0);
 
-            return null;
+            return new SignalResult(null, signals.First().Price, signals.First().Date, "No Signal", 0);
         }
     }
 

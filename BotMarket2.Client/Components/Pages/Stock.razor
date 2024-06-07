@@ -73,7 +73,7 @@
                                              SeriesType="SeriesType.Area"
                                              Name="MACD"
                                              XValue="@(item => item.Date)"
-                                             YValue="@(item => (decimal?)item.MACD)"
+                                             YValue="@(item => (decimal?)item.MACD.Macd)"
                                              PointColor="@(item => MACDColor(item))" />
                             break;
                         case "RSI":
@@ -278,7 +278,7 @@
 
     private string MACDColor(HistoricalStockDataDTO item)
     {
-        if (item.MACD > 0)
+        if (item.MACD?.Macd > 0)
         {
             return "green";
         }
