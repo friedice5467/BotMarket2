@@ -34,10 +34,10 @@ namespace BotMarket2.Client.Models.TradingStrategy
 
         public void UpdateParameters(Dictionary<string, object> parameters)
         {
-            if (parameters.ContainsKey("ThresholdOver"))
-                thresholdOver = Convert.ToDouble(parameters["ThresholdOver"]);
-            if (parameters.ContainsKey("ThresholdUnder"))
-                thresholdUnder = Convert.ToDouble(parameters["ThresholdUnder"]);
+            if (parameters.ContainsKey("ThresholdUpper"))
+                thresholdOver = Convert.ToDouble(parameters["ThresholdUpper"]);
+            if (parameters.ContainsKey("ThresholdLower"))
+                thresholdUnder = Convert.ToDouble(parameters["ThresholdLower"]);
         }
 
         public (double, double) GetThresholds()

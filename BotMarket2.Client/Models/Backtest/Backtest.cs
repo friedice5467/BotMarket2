@@ -75,10 +75,7 @@ namespace BotMarket2.Client.Models.Backtest
                     }
                     
                 }
-                if(dailyResults.Count == 2)
-                {
-                    await jsRuntime.InvokeVoidAsync("console.log", JsonSerializer.Serialize(dailyResults));
-                }
+
                 if(dailyResults.Count == 0)
                 {
                     dailyResults.Add(new(null, data.CloseLast, data.Date, "No Signal", 0));
@@ -111,33 +108,6 @@ namespace BotMarket2.Client.Models.Backtest
             }
 
             return finalSignal;
-        }
-
-        private IEnumerable<SignalResult> AggregateSignals(Dictionary<DateTime, List<SignalResult>> dailySignals)
-        {
-            foreach (var entry in dailySignals)
-            {
-                SignalResult? finalSignal = null;
-                switch (AggregationMode)
-                {
-                    case AggregationMode.MajorityVote:
-                        finalSignal = MajorityVote(entry.Value);
-                        break;
-                    case AggregationMode.SignalPriority:
-                        finalSignal = SignalPriority(entry.Value);
-                        break;
-                    case AggregationMode.SignalConfirmation:
-                        finalSignal = SignalConfirmation(entry.Value);
-                        break;
-                    default:
-                        throw new InvalidOperationException("Invalid aggregation mode.");
-                }
-
-                if (finalSignal != null)
-                {
-                    yield return finalSignal; 
-                }
-            }
         }
 
         private SignalResult MajorityVote(List<SignalResult> signals)

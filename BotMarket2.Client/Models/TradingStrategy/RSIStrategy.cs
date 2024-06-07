@@ -7,7 +7,7 @@ namespace BotMarket2.Client.Models.TradingStrategy
         public string Name => "RSI Strategy";
         public string Description => $"RSI levels below lower threshold, {thresholdLower}, generate buy signals and indicate an oversold or undervalued condition. RSI levels above threshold higher, {thresholdUpper}, generate sell signals and suggest that a security is overbought or overvalued. Current calculated RSI values are based on a 14 day period.";
         public int SignalPriority { get; set; }
-        private double thresholdLower = 40;
+        private double thresholdLower = 36;
         private double thresholdUpper = 70;
 
         /// <summary>
