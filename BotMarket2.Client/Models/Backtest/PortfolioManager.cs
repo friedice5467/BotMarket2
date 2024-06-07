@@ -38,7 +38,7 @@ namespace BotMarket2.Client.Models.Backtest
         public void Buy(HistoricalStockDataDTO data)
         {
             decimal price = data.CloseLast;
-            decimal quantity = (int)(cash * BuyPercentage / price);
+            decimal quantity = (cash * BuyPercentage / price);
             decimal totalCost = price * quantity;
             if (totalCost <= cash)
             {
@@ -100,23 +100,50 @@ namespace BotMarket2.Client.Models.Backtest
             return cash;
         }
 
-        public decimal GetNetProfit(Dictionary<string, decimal> currentPrices)
+        public decimal GetNetProfit(List<HistoricalStockDataDTO> currentData)
         {
-            decimal portfolioValue = GetPortfolioValue(currentPrices);
+            decimal portfolioValue = GetPortfolioValue(currentData);
             return portfolioValue - InitialInvestment;
         }
 
-        public decimal GetPortfolioValue(Dictionary<string, decimal> currentPrices)
+        public decimal GetPortfolioValue(List<HistoricalStockDataDTO> currentData)
         {
             decimal portfolioValue = cash;
-            foreach (var transaction in ledger.Where(t => t.TransactionType == TransactionType.Buy))
+
+            var mostRecentPrices = currentData
+                .GroupBy(data => data.Symbol)
+                .Select(group => group.OrderByDescending(data => data.Date).First())
+                .ToDictionary(data => data.Symbol, data => data.CloseLast);
+
+            var holdings = new Dictionary<string, decimal>(); 
+
+            foreach (var transaction in ledger)
             {
-                if (currentPrices.TryGetValue(transaction.Symbol, out decimal currentPrice))
+                if (!holdings.ContainsKey(transaction.Symbol))
                 {
-                    portfolioValue += currentPrice * transaction.Quantity;
+                    holdings[transaction.Symbol] = 0;
+                }
+
+                if (transaction.TransactionType == TransactionType.Buy)
+                {
+                    holdings[transaction.Symbol] += transaction.Quantity;
+                }
+                else if (transaction.TransactionType == TransactionType.Sell)
+                {
+                    holdings[transaction.Symbol] -= transaction.Quantity;
                 }
             }
+
+            foreach (var holding in holdings)
+            {
+                if (mostRecentPrices.TryGetValue(holding.Key, out decimal price))
+                {
+                    portfolioValue += holding.Value * price; 
+                }
+            }
+
             return portfolioValue;
         }
+
     }
 }

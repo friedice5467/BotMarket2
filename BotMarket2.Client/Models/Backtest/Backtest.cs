@@ -40,6 +40,17 @@ namespace BotMarket2.Client.Models.Backtest
             strategyManager.AddStrategy(strategy);
         }
 
+        public decimal GetNetProfit()
+        {
+            return portfolioManager.GetNetProfit(StockData);
+        }
+
+        public decimal GetPortfolioValue()
+        {
+            return portfolioManager.GetPortfolioValue(StockData);
+        }
+
+
         public void ConfigureAggregationSettings(AggregationMode mode, int confirmationThreshold)
         {
             AggregationMode = mode;

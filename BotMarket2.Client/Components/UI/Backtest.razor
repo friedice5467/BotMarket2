@@ -103,7 +103,7 @@
     private List<HistoricalStockDataDTO> _simulateData { get; set; } = new();
     private ApexChart<HistoricalStockDataDTO> _simChartRef = default!;
     private ApexChartOptions<HistoricalStockDataDTO> _simChartOptions = default!;
-    private PortfolioManager portfolioManager = new PortfolioManager(1000, 10, 25);
+    private PortfolioManager portfolioManager = new PortfolioManager(1000, (decimal).10, (decimal).25);
     private bool _isSimulating;
 
     protected override void OnInitialized()
@@ -196,7 +196,8 @@
                 }
             }
             var check = _simulateData;
-            Snackbar.Add("Backtest complete!", Severity.Success);
+            await JSRuntime.InvokeVoidAsync("console.log", $"Backtest complete! The net profit is {backtest.GetNetProfit()} and the portfolio value is: {backtest.GetPortfolioValue()}");
+            Snackbar.Add($"Backtest complete! The net profit is {backtest.GetNetProfit()} and the portfolio value is: {backtest.GetPortfolioValue()}", Severity.Success);
         }
         catch (Exception ex)
         {
