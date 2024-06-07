@@ -36,7 +36,7 @@
     {
         if (Backtest != null)
         {
-            Backtest.SetAdditionSettings(selectedMode, confirmationThreshold);
+            Backtest.ConfigureAggregationSettings(selectedMode, confirmationThreshold);
             Snackbar.Add("Settings applied successfully.", Severity.Success);
             MudDialog.Close(DialogResult.Ok(true));
         }
