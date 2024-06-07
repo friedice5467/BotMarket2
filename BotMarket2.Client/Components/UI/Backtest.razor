@@ -103,12 +103,13 @@
     private List<HistoricalStockDataDTO> _simulateData { get; set; } = new();
     private ApexChart<HistoricalStockDataDTO> _simChartRef = default!;
     private ApexChartOptions<HistoricalStockDataDTO> _simChartOptions = default!;
+    private PortfolioManager portfolioManager = new PortfolioManager(1000, 10, 25);
     private bool _isSimulating;
 
     protected override void OnInitialized()
     {
         var orderedDtos = DataDTOs.OrderBy(x => x.Date);
-        backtest = new BotMarket2.Client.Models.Backtest.Backtest(orderedDtos.ToList(), JSRuntime);
+        backtest = new BotMarket2.Client.Models.Backtest.Backtest(orderedDtos.ToList(), portfolioManager, JSRuntime);
         selectedStrategies.Add(availableStrategies.First(s => s.Name == "RSI Strategy"));
         _simulateData = new();
         startDate = orderedDtos.OrderBy(x => x.Date).First().Date;
@@ -149,9 +150,18 @@
         strategy.UpdateParameters(new Dictionary<string, object>() { { "ThresholdUpper", value } });
     }
 
+    private void OnSettingApply(PortfolioManager manager)
+    {
+        backtest = new BotMarket2.Client.Models.Backtest.Backtest(DataDTOs.OrderBy(x => x.Date).ToList(), manager, JSRuntime);
+    }
+
     private async Task OpenAdditionalSettingsAsync()
     {
-        var parameters = new DialogParameters<BacktestSettingDialog> { { x => x.Backtest, backtest } };
+        var parameters = new DialogParameters<BacktestSettingDialog> { 
+            { x => x.Backtest, backtest }, 
+            { x => x.PortfolioManager , portfolioManager }, 
+            { x => x.OnSettingsApplied, new EventCallbackFactory().Create(this, new Action<PortfolioManager>(OnSettingApply)) }
+        };
         var dialog = DialogService.Show<BacktestSettingDialog>("Additional Settings", parameters);
         var result = await dialog.Result;
     }

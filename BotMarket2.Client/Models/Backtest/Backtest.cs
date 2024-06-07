@@ -9,16 +9,17 @@ namespace BotMarket2.Client.Models.Backtest
     {
         private StrategyManager strategyManager = new StrategyManager();
         private SignalAggregator signalAggregator = new SignalAggregator();
+        private PortfolioManager portfolioManager;
         public List<HistoricalStockDataDTO> StockData { get; set; }
         public AggregationMode AggregationMode { get; set; }
         public int ConfirmationThreshold { get; set; } = 2;
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
-        public decimal InitialInvestment { get; set; } = 1000;
         private IJSRuntime jsRuntime;
 
-        public Backtest(List<HistoricalStockDataDTO> stockData, IJSRuntime jsRuntime)
+        public Backtest(List<HistoricalStockDataDTO> stockData, PortfolioManager portfolio, IJSRuntime jsRuntime)
         {
+            portfolioManager = portfolio;
             StockData = stockData;
             this.jsRuntime = jsRuntime;
         }
@@ -62,6 +63,7 @@ namespace BotMarket2.Client.Models.Backtest
                     dailyResults.Add(new(null, data.CloseLast, data.Date, "No Signal", 0));
 
                 SignalResult aggregatedResult = signalAggregator.AggregateSignals(dailyResults, AggregationMode, ConfirmationThreshold);
+                portfolioManager.ActOnSignal(data, aggregatedResult.SignalType);
                 yield return aggregatedResult;
                 await Task.Delay(50); 
             }

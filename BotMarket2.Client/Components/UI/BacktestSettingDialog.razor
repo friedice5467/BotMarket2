@@ -13,7 +13,22 @@
                 <MudSelectItem Value="mode">@mode.ToString()</MudSelectItem>
             }
         </MudSelect>
-        <MudNumericField T="int" Label="Confirmation Threshold" @bind-Value="confirmationThreshold" />
+        @if (selectedMode == AggregationMode.SignalConfirmation)
+        {
+            <MudNumericField T="int" Label="Confirmation Threshold" @bind-Value="confirmationThreshold" />
+        }
+        <MudGrid>
+
+            <MudItem lg="4">
+                <MudNumericField T="decimal" @bind-Value="initialInvestment" Label="Initial Investment" />
+            </MudItem>
+            <MudItem lg="4">
+                <MudNumericField T="decimal" @bind-Value="targetProfitPercentage" Label="Max Investment" />
+            </MudItem>
+            <MudItem lg="4">
+                <MudNumericField T="decimal" @bind-Value="buyPercentage" Label="Min Investment" />
+            </MudItem>
+        </MudGrid>
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Cancel">Cancel</MudButton>
@@ -22,10 +37,18 @@
 </MudDialog>
 @code {
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
-    [Parameter] public BotMarket2.Client.Models.Backtest.Backtest Backtest { get; set; }
-
+    [Parameter]
+    public BotMarket2.Client.Models.Backtest.Backtest Backtest { get; set; }
+    [Parameter]
+    public EventCallback<PortfolioManager> OnSettingsApplied { get; set; }
+    [Parameter]
+    public PortfolioManager PortfolioManager { get; set; }
     private AggregationMode selectedMode;
     private int confirmationThreshold;
+
+    private decimal initialInvestment;
+    private decimal targetProfitPercentage;
+    private decimal buyPercentage;
 
     private void Cancel()
     {
@@ -38,6 +61,8 @@
         {
             Backtest.ConfigureAggregationSettings(selectedMode, confirmationThreshold);
             Snackbar.Add("Settings applied successfully.", Severity.Success);
+            PortfolioManager manager = new PortfolioManager(initialInvestment, targetProfitPercentage, buyPercentage);
+            OnSettingsApplied.InvokeAsync(manager);
             MudDialog.Close(DialogResult.Ok(true));
         }
     }
@@ -48,6 +73,12 @@
         {
             selectedMode = Backtest.AggregationMode;
             confirmationThreshold = Backtest.ConfirmationThreshold;
+        }
+        if(PortfolioManager != null)
+        {
+            initialInvestment = PortfolioManager.InitialInvestment;
+            targetProfitPercentage = PortfolioManager.TargetProfitPercentage;
+            buyPercentage = PortfolioManager.BuyPercentage;
         }
     }
 }
